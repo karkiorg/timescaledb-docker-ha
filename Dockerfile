@@ -55,7 +55,8 @@ RUN source="/tmp/sources/sources.list.$(dpkg --print-architecture)"; \
     rm -fr /tmp/sources
 
 # Make sure we're as up-to-date as possible, and install the highlest level dependencies
-RUN apt-get update; \
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*; \
+    apt-get update; \
     apt-get upgrade -y; \
     apt-get install -y ca-certificates curl gnupg1 gpg gpg-agent locales lsb-release wget unzip
 
@@ -147,6 +148,9 @@ RUN apt-get install -y python3 python3-pip
 
 # using uv with pgai reduces size of dependencies
 RUN python3 -m pip install uv
+
+# Fix Python package CVEs
+RUN python3 -m pip install --upgrade 'cryptography>=46.0.5' 'jaraco.context>=6.1.0' 'wheel>=0.46.2' 'filelock>=3.20.3'
 
 # We install some build dependencies and mark the installed packages as auto-installed,
 # this will cause the cleanup to get rid of all of these packages
