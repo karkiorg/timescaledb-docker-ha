@@ -25,7 +25,7 @@
 ## the changes required are not that big for this Docker Image. Most of the
 ## tools we use will be the same across the board, as most of our tools our
 ## installed using external repositories.
-ARG DOCKER_FROM=ubuntu:22.04
+ARG DOCKER_FROM=ubuntu:24.04
 FROM ${DOCKER_FROM} AS builder
 
 SHELL ["/bin/bash", "-exu", "-o", "pipefail", "-c"]
@@ -55,9 +55,7 @@ RUN source="/tmp/sources/sources.list.$(dpkg --print-architecture)"; \
     rm -fr /tmp/sources
 
 # Make sure we're as up-to-date as possible, and install the highlest level dependencies
-RUN apt-get update; \
-    apt-get upgrade -y; \
-    apt-get install -y ca-certificates curl gnupg1 gpg gpg-agent locales lsb-release wget unzip
+RUN apt-get update && apt-get upgrade -y && apt-get install -y ca-certificates curl gnupg1 gpg gpg-agent locales lsb-release wget unzip && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /build/scripts
 RUN chmod 777 /build
@@ -261,7 +259,7 @@ RUN apt-get install -y python3-etcd python3-requests python3-pystache python3-ku
 
 # Barman cloud
 # Required for CloudNativePG compatibility
-RUN pip3 install --no-cache-dir 'barman[cloud,azure,snappy,google]'
+RUN pip3 install --no-cache-dir 'barman[cloud,azure,snappy,google]' cryptography==46.0.5 wheel==0.46.2 filelock==3.20.3 jaraco.context==6.1.0 urllib3==2.0.7-1ubuntu0.4
 
 RUN apt-get install -y timescaledb-tools
 
