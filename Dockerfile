@@ -261,7 +261,7 @@ RUN apt-get install -y python3-etcd python3-requests python3-pystache python3-ku
 
 # Barman cloud
 # Required for CloudNativePG compatibility
-RUN pip3 install --no-cache-dir 'barman[cloud,azure,snappy,google]'
+RUN pip3 install --no-cache-dir 'barman[cloud,azure,snappy,google]' 'cryptography>=46.0.5' 'jaraco.context>=6.1.0' 'wheel>=0.46.2' 'filelock>=3.20.3'
 
 RUN apt-get install -y timescaledb-tools
 
