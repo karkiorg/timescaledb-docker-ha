@@ -25,8 +25,11 @@
 ## the changes required are not that big for this Docker Image. Most of the
 ## tools we use will be the same across the board, as most of our tools our
 ## installed using external repositories.
-ARG DOCKER_FROM=ubuntu:22.04
+ARG DOCKER_FROM=ubuntu:24.04
 FROM ${DOCKER_FROM} AS builder
+
+# Install adduser package required for user creation
+RUN apt-get update && apt-get install -y --no-install-recommends adduser && rm -rf /var/lib/apt/lists/*
 
 SHELL ["/bin/bash", "-exu", "-o", "pipefail", "-c"]
 
@@ -41,7 +44,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # We need full control over the running user, including the UID, therefore we
 # create the postgres user as the first thing on our list
-RUN adduser --home /home/postgres --uid 1000 --disabled-password --gecos "" postgres
+RUN id -u postgres >/dev/null 2>&1 || adduser --home /home/postgres --uid 1000 --disabled-password --gecos "" postgres
 
 RUN echo 'APT::Install-Recommends "false";' >> /etc/apt/apt.conf.d/01norecommend
 RUN echo 'APT::Install-Suggests "false";' >> /etc/apt/apt.conf.d/01norecommend
@@ -55,7 +58,8 @@ RUN source="/tmp/sources/sources.list.$(dpkg --print-architecture)"; \
     rm -fr /tmp/sources
 
 # Make sure we're as up-to-date as possible, and install the highlest level dependencies
-RUN apt-get update; \
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*; \
+    apt-get update; \
     apt-get upgrade -y; \
     apt-get install -y ca-certificates curl gnupg1 gpg gpg-agent locales lsb-release wget unzip
 
@@ -146,7 +150,7 @@ RUN find /usr/share/i18n/charmaps/ -type f ! -name UTF-8.gz -delete; \
 RUN apt-get install -y python3 python3-pip
 
 # using uv with pgai reduces size of dependencies
-RUN python3 -m pip install uv
+RUN python3 -m pip install uv cryptography==46.0.5 jaraco.context==6.1.0 wheel==0.46.2 filelock==3.20.3
 
 # We install some build dependencies and mark the installed packages as auto-installed,
 # this will cause the cleanup to get rid of all of these packages
