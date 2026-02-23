@@ -25,7 +25,7 @@
 ## the changes required are not that big for this Docker Image. Most of the
 ## tools we use will be the same across the board, as most of our tools our
 ## installed using external repositories.
-ARG DOCKER_FROM=ubuntu:22.04
+ARG DOCKER_FROM=ubuntu:24.04
 FROM ${DOCKER_FROM} AS builder
 
 SHELL ["/bin/bash", "-exu", "-o", "pipefail", "-c"]
@@ -39,9 +39,11 @@ ARG PG_MAJOR=17
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+RUN apt-get update && apt-get install -y adduser --no-install-recommends && rm -rf /var/lib/apt/lists/*
+
 # We need full control over the running user, including the UID, therefore we
 # create the postgres user as the first thing on our list
-RUN adduser --home /home/postgres --uid 1000 --disabled-password --gecos "" postgres
+RUN userdel -r ubuntu 2>/dev/null; adduser --home /home/postgres --uid 1000 --disabled-password --gecos "" postgres
 
 RUN echo 'APT::Install-Recommends "false";' >> /etc/apt/apt.conf.d/01norecommend
 RUN echo 'APT::Install-Suggests "false";' >> /etc/apt/apt.conf.d/01norecommend
@@ -57,7 +59,8 @@ RUN source="/tmp/sources/sources.list.$(dpkg --print-architecture)"; \
 # Make sure we're as up-to-date as possible, and install the highlest level dependencies
 RUN apt-get update; \
     apt-get upgrade -y; \
-    apt-get install -y ca-certificates curl gnupg1 gpg gpg-agent locales lsb-release wget unzip
+    apt-get install -y ca-certificates curl gnupg1 gpg gpg-agent locales lsb-release wget unzip; \
+    rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /build/scripts
 RUN chmod 777 /build
