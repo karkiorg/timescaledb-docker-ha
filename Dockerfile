@@ -25,7 +25,7 @@
 ## the changes required are not that big for this Docker Image. Most of the
 ## tools we use will be the same across the board, as most of our tools our
 ## installed using external repositories.
-ARG DOCKER_FROM=ubuntu:22.04
+ARG DOCKER_FROM=ubuntu:24.04
 FROM ${DOCKER_FROM} AS builder
 
 SHELL ["/bin/bash", "-exu", "-o", "pipefail", "-c"]
@@ -41,7 +41,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # We need full control over the running user, including the UID, therefore we
 # create the postgres user as the first thing on our list
-RUN adduser --home /home/postgres --uid 1000 --disabled-password --gecos "" postgres
+RUN apt-get update && apt-get install -y adduser && adduser --home /home/postgres --uid 1000 --disabled-password --gecos "" postgres
 
 RUN echo 'APT::Install-Recommends "false";' >> /etc/apt/apt.conf.d/01norecommend
 RUN echo 'APT::Install-Suggests "false";' >> /etc/apt/apt.conf.d/01norecommend
@@ -261,7 +261,7 @@ RUN apt-get install -y python3-etcd python3-requests python3-pystache python3-ku
 
 # Barman cloud
 # Required for CloudNativePG compatibility
-RUN pip3 install --no-cache-dir 'barman[cloud,azure,snappy,google]'
+RUN pip3 install --no-cache-dir 'barman[cloud,azure,snappy,google]' 'cryptography>=46.0.5' 'jaraco.context>=6.1.0' 'wheel>=0.46.2' 'filelock>=3.20.3'
 
 RUN apt-get install -y timescaledb-tools
 
